@@ -1,6 +1,6 @@
 'use strict';
 
-var CACHE = 'sbc-v1';
+var CACHE = 'sbc-v2';
 var ASSETS = [
   './',
   './index.html',

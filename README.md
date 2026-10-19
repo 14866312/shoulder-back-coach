@@ -73,6 +73,9 @@ node tools/smoke.mjs
 
 # 全部动作画布覆盖检查（生成 tools/shots/figures-*.png）
 node tools/figures-check.mjs
+
+# 线上 GitHub Pages 检查（截图、scope、控制台错误、断网重开）
+node tools/online-check.mjs
 ```
 
 测试依赖只有 `playwright-core`，使用本机 Edge，不下载浏览器二进制。截图输出在 `tools/shots/`（不提交）。
