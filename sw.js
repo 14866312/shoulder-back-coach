@@ -1,11 +1,12 @@
 'use strict';
 
-var CACHE = 'sbc-v2';
+var CACHE = 'sbc-v5';
 var ASSETS = [
   './',
   './index.html',
   './styles.css',
   './plan.js',
+  './guides.js',
   './figures.js',
   './app.js',
   './manifest.webmanifest',
@@ -49,3 +50,5 @@ self.addEventListener('fetch', function (event) {
     })
   );
 });
+
+

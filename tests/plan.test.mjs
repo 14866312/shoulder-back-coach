@@ -49,17 +49,18 @@ test('组数：适应 2、完整按训练日、减量向上取整', () => {
   assert.equal(Plan.setsFor('legPress', 'deload', Plan.fullSetsFor('fri', 'legPress')), 1);
 });
 
-test('周总量：完整 54、适应 46、分类不混算', () => {
+test('周总量：完整 51、适应 46、分类不混算', () => {
   const t = Plan.weekTotals({ gluteBridge: 'machine' });
-  assert.equal(t.full, 54);
+  assert.equal(t.full, 51);
   assert.equal(t.adapt, 46);
-  assert.deepEqual([t.mon, t.tue, t.thu, t.fri], [13, 14, 15, 12]);
+  assert.deepEqual([t.mon, t.tue, t.thu, t.fri], [14, 11, 14, 12]);
   const c = Plan.categoryTotals({ gluteBridge: 'machine' });
-  assert.equal(c['背'], 10);
+  assert.equal(c['背'], 12);
+  assert.equal(c['侧平举'], 8);
   assert.equal(c['腿举'], 5);
-  assert.equal(c['腿弯举'], 5);
-  assert.equal(c['肩推'], 2);
-  assert.equal(c['核心'], 4);
+  assert.equal(c['腿弯举'], 4);
+  assert.equal(c['胸'], 4);
+  assert.equal(c['核心'], 2);
 });
 
 test('双进阶：同重量连续两次全部达标 → increase；一次 → keep', () => {
@@ -143,9 +144,9 @@ test('适应期 2 组与完整期 3 组不混算', () => {
 
 test('自重动作 → bodyweight；自重臀桥连续两次 ≥20 → load-optional', () => {
   const st = makeState();
-  addSession(st, '2026-10-19', 'tue', 'adapt', 'deadbug', [[0, 10, 3], [0, 10, 3]]);
-  addSession(st, '2026-10-26', 'tue', 'adapt', 'deadbug', [[0, 10, 3], [0, 10, 3]]);
-  assert.equal(Plan.analyzeProgression(st, 'tue', 'deadbug', 'adapt').status, 'bodyweight');
+  addSession(st, '2026-10-23', 'fri', 'adapt', 'crunch', [[0, 12, 3], [0, 12, 3]]);
+  addSession(st, '2026-10-30', 'fri', 'adapt', 'crunch', [[0, 12, 3], [0, 12, 3]]);
+  assert.equal(Plan.analyzeProgression(st, 'fri', 'crunch', 'adapt').status, 'bodyweight');
 
   const g = makeState();
   addSession(g, '2026-10-23', 'fri', 'adapt', 'gluteBodyweight', [[0, 20, 2], [0, 20, 2]]);

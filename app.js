@@ -14,6 +14,7 @@
   var detailPlayer = null;
   var trainFigureId = null;
   var figureMode = 'correct';
+  var figureFault = 1;
   var clockTimer = null;
   var restTimer = null;
   var restBeeped = false;
@@ -46,6 +47,26 @@
     var settings = s.settings && typeof s.settings === 'object' ? s.settings : {};
     var start = P.isMonday(settings.startDate) ? settings.startDate : DEFAULT_START;
     var bw = Number(settings.bodyWeightKg);
+    var active = s.active && typeof s.active === 'object' ? s.active : null;
+    // 计划换了动作后，进行中的训练按平替迁移；已经保存的历史记录不动。
+    if (active && Array.isArray(active.exercises) && P.LEGACY_REPLACEMENT) {
+      var mapped = [];
+      active.exercises.forEach(function (ex) {
+        if (!ex || !ex.exId) return;
+        if (Object.prototype.hasOwnProperty.call(P.LEGACY_REPLACEMENT, ex.exId)) {
+          var to = P.LEGACY_REPLACEMENT[ex.exId];
+          if (!to) return;
+          ex.exId = to;
+        }
+        mapped.push(ex);
+      });
+      active.exercises = mapped;
+      var cur = active.cursor && typeof active.cursor === 'object' ? active.cursor : { exIndex: 0, setIndex: 0 };
+      cur.exIndex = Math.max(0, Math.min(Number(cur.exIndex) || 0, Math.max(0, mapped.length - 1)));
+      cur.setIndex = Math.max(0, Number(cur.setIndex) || 0);
+      active.cursor = cur;
+      if (!mapped.length) active = null;
+    }
     return {
       version: 1,
       settings: {
@@ -55,7 +76,7 @@
       },
       weeks: s.weeks && typeof s.weeks === 'object' && !Array.isArray(s.weeks) ? s.weeks : {},
       sessions: Array.isArray(s.sessions) ? s.sessions.filter(function (x) { return x && x.date && x.dayKey; }) : [],
-      active: s.active && typeof s.active === 'object' ? s.active : null
+      active: active
     };
   }
 
@@ -169,7 +190,7 @@
     else renderToday();
   }
 
-  function exerciseMeta(exId) { return P.EXERCISES[exId] || null; }
+  function exerciseMeta(exId) { return P.EXERCISES[exId] || (P.LEGACY_EXERCISES && P.LEGACY_EXERCISES[exId]) || null; }
 
   function allExerciseIds() {
     var seen = {}, out = [];
@@ -327,9 +348,47 @@
       '<section class="card" style="margin-top:14px"><p class="eyebrow">通用热身</p><p class="small" style="margin-top:7px">轻松单车或快走 5 分钟；当天第一个复合动作做 2–3 组递增热身；第一个推胸再做 1–2 组轻热身。热身不计入正式组。</p></section></div>';
   }
 
-  function figureData(exId) {
-    var figs = window.FIGURES || {};
-    return figs[exId] || figs.pulldown || { tips: [], mistakes: [] };
+  function guideData(exId) {
+    var g = window.GUIDES || {};
+    return g[exId] || g.pulldown || null;
+  }
+
+  // 跟练页常驻的两条关键提示 + 一句要点，从结构化教学里派生，避免两处文案打架。
+  function keyTips(g) {
+    if (!g) return [];
+    return [g.setup[1] || g.setup[0], g.steps[2] ? g.steps[2].text : g.steps[0].text];
+  }
+
+  function mistakeLine(m) {
+    return '错误 ' + m.fault + ' · ' + m.tag + '：' + m.phenomenon;
+  }
+
+  function guideFolds(g) {
+    if (!g) return '';
+    return '<details><summary>器械设置<span class="fold-count">' + (g.setup.length + g.machineVariation.length) + ' 项</span></summary>' +
+      '<div class="fold-body"><ul>' + g.setup.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' +
+      '<p class="fold-sub">器械差异</p><ul>' + g.machineVariation.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul></div></details>' +
+      '<details><summary>分步动作<span class="fold-count">' + g.steps.length + ' 步</span></summary>' +
+      '<div class="fold-body"><ol>' + g.steps.map(function (s) { return '<li><b>' + esc(s.title) + '</b>：' + esc(s.text) + '</li>'; }).join('') + '</ol></div></details>' +
+      '<details><summary>常见错误<span class="fold-count">' + g.mistakes.length + ' 个</span></summary>' +
+      '<div class="fold-body"><ul class="mistake-list">' + g.mistakes.map(function (m) {
+        return '<li><b>错误 ' + m.fault + ' · ' + esc(m.tag) + '</b>' +
+          '<span><i>现象</i>' + esc(m.phenomenon) + '</span>' +
+          '<span><i>为什么错</i>' + esc(m.why) + '</span>' +
+          '<span><i>怎么改</i>' + esc(m.fix) + '</span>' +
+          '<span><i>自检</i>' + esc(m.check) + '</span></li>';
+      }).join('') + '</ul></div></details>' +
+      '<details><summary>自检与安全<span class="fold-count">' + g.safety.length + ' 条</span></summary>' +
+      '<div class="fold-body"><ul>' + g.safety.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul></div></details>';
+  }
+
+  function guideOneLiner(g) {
+    if (!g) return '';
+    return '<div class="fold-body inline">' +
+      '<p><b>器械设置</b>：' + esc(g.setup[0]) + '</p>' +
+      '<p><b>分步</b>：' + esc(g.steps.map(function (s) { return s.title; }).join(' → ')) + '</p>' +
+      '<p><b>常见错误</b>：' + esc(g.mistakes.map(function (m) { return m.tag; }).join('；')) + '</p>' +
+      '<p><b>自检</b>：' + esc(g.safety[0]) + '</p></div>';
   }
 
   function openExerciseDetail(dayKey, exId) {
@@ -338,18 +397,29 @@
     var day = P.getDayPlan(dayKey, phase, state.settings);
     var ex = day.exercises.find(function (x) { return x.id === exId; });
     if (!ex) return;
-    var fig = figureData(exId);
-    var tips = fig.tips || [], mistakes = fig.mistakes || [];
+    var g = guideData(exId);
     var html = '<p class="eyebrow">' + esc(day.label) + ' · ' + esc(day.title) + '</p><h2>' + esc(ex.name) + '</h2>' +
       '<p class="small muted">' + ex.plannedSets + ' 组 × ' + esc(ex.repsLabel) + ' 次 · 组间休息 ' + ex.restSec + ' 秒</p>' +
       '<div class="detail-canvas-wrap"><canvas id="detailCanvas" width="960" height="600"></canvas></div>' +
       '<div class="segmented" id="detailToggle"><button class="is-active" data-detail-mode="correct">正确动作</button><button data-detail-mode="fault">错误示范</button></div>' +
-      '<ul class="info-list" style="margin-top:15px">' + tips.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' +
-      '<div class="mistakes" style="margin-top:14px"><p style="color:#ff9a93;font-size:12px;font-weight:750">常见错误</p><ul class="info-list errors">' + mistakes.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul></div>' +
+      '<div class="fault-chips is-hidden" id="detailFaultChips">' + (window.FIGURES && window.FIGURES[exId] ? window.FIGURES[exId].faults.map(function (f, i) {
+        return '<button data-fault-chip="' + (i + 1) + '">错误 ' + (i + 1) + ' · ' + esc(f) + '</button>';
+      }).join('') : '') + '</div>' +
+      '<p class="cue">' + esc(g ? g.tagline : '') + '</p>' +
+      '<div class="open-all"><button class="link-btn" id="detailExpandAll">全部展开</button></div>' +
+      '<div class="fold-group" id="detailFolds">' + guideFolds(g) + '</div>' +
       '<div class="modal-actions"><button class="btn ghost wide" data-action="close-modal">关闭</button></div>';
     openModal(html, function () {
       var canvas = $('detailCanvas');
       detailPlayer = window.Figures && window.Figures.createPlayer ? window.Figures.createPlayer(canvas, exId) : null;
+      var allBtn = $('detailExpandAll');
+      if (allBtn) {
+        allBtn.addEventListener('click', function () {
+          var open = allBtn.textContent === '全部展开';
+          $$('#detailFolds details').forEach(function (d) { d.open = open; });
+          allBtn.textContent = open ? '全部收起' : '全部展开';
+        });
+      }
       return function () { if (detailPlayer) detailPlayer.stop(); detailPlayer = null; };
     });
   }
@@ -458,7 +528,7 @@
       '<section class="card"><p class="eyebrow">数据</p><p class="small muted" style="margin-top:5px">训练数据只保存在这台手机。换机或清理浏览器前请导出 JSON 备份。</p>' +
       '<div class="btn-row" style="margin-top:14px"><button class="btn ghost" data-action="export">导出备份</button><button class="btn ghost" data-action="import">导入备份</button></div>' +
       '<button class="btn danger-ghost wide" style="margin-top:9px" data-action="clear-all">清除全部数据</button></section>' +
-      '<section class="card"><p class="eyebrow">关于</p><p style="margin-top:6px;font-weight:750">肩背教练 · 版本 1.0.0</p><p class="small muted" style="margin-top:5px">六周肩背优先训练计划。离线 PWA，无账号、无上传、无在线依赖。计划数值为固定训练框架，不替代医疗建议。</p></section></div>';
+      '<section class="card"><p class="eyebrow">关于</p><p style="margin-top:6px;font-weight:750">肩背教练 · 版本 1.2.0</p><p class="small muted" style="margin-top:5px">六周肩背优先训练计划。离线 PWA，无账号、无上传、无在线依赖。计划数值为固定训练框架，不替代医疗建议。</p></section></div>';
   }
 
   function saveSettingsFromForm() {
@@ -661,6 +731,7 @@
       if (trainPlayer) trainPlayer.stop();
       trainFigureId = exId;
       trainPlayer = window.Figures.createPlayer($('trainCanvas'), exId);
+      if (trainPlayer && trainPlayer.setFault) trainPlayer.setFault(figureFault);
     }
     if (trainPlayer) trainPlayer.setMode(figureMode);
   }
@@ -669,8 +740,8 @@
     var c = activeCtx();
     if (!c) { closeTraining(); return; }
     var day = P.DAYS[c.a.dayKey];
-    var fig = figureData(c.ex.exId);
-    var tips = fig.tips || [], mistakes = fig.mistakes || [];
+    var g = guideData(c.ex.exId);
+    var tips = c.ex.pain ? [] : keyTips(g);
     $('trainExIndex').textContent = '动作 ' + (c.exIndex + 1) + '/' + c.a.exercises.length;
     $('trainSetIndex').textContent = c.setIndex >= c.planned ? '本动作已完成' : '第 ' + (c.setIndex + 1) + '/' + c.planned + ' 组';
     $('trainDayLabel').textContent = (day ? day.label + ' · ' + day.title : '训练');
@@ -679,13 +750,17 @@
     $('trainTarget').textContent = c.planned + ' 组 × ' + P.repsLabel(c.meta) + ' 次';
     $('trainRest').textContent = '组间 ' + c.meta.restSec + ' 秒';
     $('trainLast').innerHTML = lastLine(c.a.dayKey, c.ex.exId);
-    var tipHtml = tips.slice(0, 2).map(function (t) { return '<div class="tip">' + esc(t) + '</div>'; }).join('');
-    if (tips.length > 2) {
-      tipHtml += '<details style="margin-top:2px"><summary style="color:var(--muted);font-size:12px;min-height:32px;display:flex;align-items:center;cursor:pointer">其余 ' + (tips.length - 2) + ' 条要点</summary><div class="tips" style="margin-top:4px">' + tips.slice(2).map(function (t) { return '<div class="tip">' + esc(t) + '</div>'; }).join('') + '</div></details>';
-    }
+    $('trainCue').textContent = g ? g.tagline : '';
+    var tipHtml = tips.map(function (t) { return '<div class="tip">' + esc(t) + '</div>'; }).join('');
     if (c.ex.pain) tipHtml = '<div class="tip" style="color:#ff9a93">本动作已标记关节不适，剩余组已跳过。</div>' + tipHtml;
     $('trainTips').innerHTML = tipHtml;
-    $('trainMistakeList').innerHTML = mistakes.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('');
+    $('trainGuideBody').innerHTML = guideOneLiner(g);
+    $('trainFaultChips').innerHTML = (g && window.FIGURES && window.FIGURES[c.ex.exId])
+      ? window.FIGURES[c.ex.exId].faults.map(function (f, i) {
+        return '<button data-fault-chip="' + (i + 1) + '"' + (figureMode === 'fault' && figureFault === i + 1 ? ' class="is-active"' : '') + '>错误 ' + (i + 1) + ' · ' + esc(f) + '</button>';
+      }).join('')
+      : '';
+    $('trainFaultChips').classList.toggle('is-hidden', figureMode !== 'fault');
     $('setupInput').value = c.ex.setup || '';
     $('rirInput').value = c.set ? (c.set.rir === null || c.set.rir === undefined ? defaultRir(c.a.phase) : c.set.rir) : defaultRir(c.a.phase);
 
@@ -1018,14 +1093,32 @@
         figureMode = modeBtn.getAttribute('data-figure-mode') === 'fault' ? 'fault' : 'correct';
         $$('#figureToggle button').forEach(function (b) { b.classList.toggle('is-active', b.getAttribute('data-figure-mode') === figureMode); });
         $('faultBadge').classList.toggle('is-hidden', figureMode !== 'fault');
-        if (trainPlayer) trainPlayer.setMode(figureMode);
+        $('trainFaultChips').classList.toggle('is-hidden', figureMode !== 'fault');
+        if (trainPlayer) {
+          if (figureMode === 'fault' && trainPlayer.setFault) trainPlayer.setFault(figureFault);
+          trainPlayer.setMode(figureMode);
+        }
         return;
       }
       var detailMode = e.target.closest('[data-detail-mode]');
       if (detailMode) {
         var mode = detailMode.getAttribute('data-detail-mode') === 'fault' ? 'fault' : 'correct';
         $$('#detailToggle button').forEach(function (b) { b.classList.toggle('is-active', b.getAttribute('data-detail-mode') === mode); });
-        if (detailPlayer) detailPlayer.setMode(mode);
+        var chips = $('detailFaultChips');
+        if (chips) chips.classList.toggle('is-hidden', mode !== 'fault');
+        if (detailPlayer) {
+          if (mode === 'fault' && detailPlayer.setFault) detailPlayer.setFault(figureFault);
+          detailPlayer.setMode(mode);
+        }
+        return;
+      }
+      var faultChip = e.target.closest('[data-fault-chip]');
+      if (faultChip) {
+        figureFault = Number(faultChip.getAttribute('data-fault-chip')) || 1;
+        var group = faultChip.parentNode;
+        $$('[data-fault-chip]', group).forEach(function (b) { b.classList.toggle('is-active', b === faultChip); });
+        if (detailPlayer && detailPlayer.setFault) detailPlayer.setFault(figureFault);
+        if (trainPlayer && trainPlayer.setFault) trainPlayer.setFault(figureFault);
         return;
       }
       var actionEl = e.target.closest('[data-action]');

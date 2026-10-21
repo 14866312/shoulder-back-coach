@@ -59,8 +59,10 @@
         <span id="trainTarget">3 组 × 8–12 次</span><span id="trainRest">组间 150 秒</span>
       </div>
       <p class="last-record" id="trainLast">上次：暂无记录</p>
+      <p class="cue" id="trainCue"></p>
       <div class="tips" id="trainTips"></div>
-      <details class="mistakes" id="trainMistakes"><summary>常见错误</summary><ul id="trainMistakeList"></ul></details>
+      <div class="fault-chips is-hidden" id="trainFaultChips"></div>
+      <details class="fold" id="trainGuide"><summary>动作教学<span class="fold-count" id="trainGuideCount">4 项</span></summary><div class="fold-body" id="trainGuideBody"></div></details>
       <label class="field setup-field"><span>器械设置 <small>可留空；同动作同设置才比较进阶</small></span><input id="setupInput" type="text" maxlength="40" placeholder="如 座椅3档 / 宽握"></label>
       <div class="set-panel">
         <div class="set-panel-head"><strong>本组记录</strong><span id="setHint">填完再点完成</span></div>
@@ -107,7 +109,9 @@
   <input id="importFile" type="file" accept="application/json,.json" hidden>
 
   <script src="./plan.js"></script>
+  <script src="./guides.js"></script>
   <script src="./figures.js"></script>
   <script src="./app.js"></script>
 </body>
 </html>
+

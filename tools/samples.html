@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>动作样板审图 · 肩背教练</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 28px 34px 60px; background: #e9e5db; color: #17181b;
+    font-family: -apple-system, "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif; }
+  h1 { font-size: 24px; margin: 0 0 4px; letter-spacing: -.02em; }
+  .lead { margin: 0 0 26px; color: #5d636b; font-size: 13px; line-height: 1.6; }
+  h2 { font-size: 17px; margin: 0; }
+  .id { color: #8a8f97; font-size: 12px; font-weight: 600; margin-left: 8px; }
+  section.fig { background: #f4f1ea; border: 1px solid #cbc5b8; border-radius: 4px; padding: 18px 20px 20px; margin-bottom: 30px; }
+  .head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px; gap: 16px; flex-wrap: wrap; }
+  .note { color: #6b7078; font-size: 12px; }
+  figure { margin: 0; }
+  canvas { display: block; width: 100%; aspect-ratio: 16/10; background: #f4f1ea; border: 1px solid #d5cfc2; border-radius: 3px; }
+  figcaption { font-size: 11px; color: #5d636b; padding-top: 5px; }
+  .pose-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+  .faults { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+  .subhead { font-size: 12px; font-weight: 800; letter-spacing: .06em; color: #8a8f97; margin: 16px 0 0; }
+  .legend { display: flex; flex-wrap: wrap; gap: 18px; margin: 12px 0 0; font-size: 11px; color: #5d636b; }
+  .legend i { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+
+  /* ---------- 390px 折叠 UI 模拟 ---------- */
+  .phone-row { display: flex; gap: 30px; align-items: flex-start; flex-wrap: wrap; }
+  .phone-wrap { width: 390px; max-width: 100%; }
+  .phone { width: 390px; max-width: 100%; background: #121316; color: #f4f1ea; border-radius: 26px; padding: 16px 14px 22px;
+    box-shadow: 0 18px 40px rgba(0,0,0,.22); font-size: 15px; line-height: 1.45; overflow: hidden; }
+  .phone .eyebrow { color: #ff5a1f; font-size: 11px; font-weight: 800; letter-spacing: .1em; margin: 0; }
+  .phone h3 { font-size: 22px; margin: 4px 0 0; letter-spacing: -.02em; }
+  .phone .sub { color: #9aa0a8; font-size: 12px; margin: 4px 0 0; }
+  .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 5px; margin: 12px 0 0; border-radius: 13px; background: #1b1d22; }
+  .seg span { text-align: center; padding: 9px; border-radius: 9px; font-size: 13px; font-weight: 700; color: #9aa0a8; }
+  .seg span.on { background: #ff5a1f; color: #17120f; }
+  .tagline { margin: 12px 0 0; padding: 10px 12px; border-left: 3px solid #ff5a1f; background: rgba(255,90,31,.1);
+    border-radius: 0 10px 10px 0; font-size: 13px; color: #e8e5de; }
+  .tagline.grey { border-left-color: #5F656E; background: rgba(95,101,110,.16); }
+  .open-all { margin: 6px 0 0; text-align: right; }
+  .open-all button { background: none; border: 0; color: #ff5a1f; font-size: 12px; font-weight: 750; cursor: pointer; padding: 8px 6px; }
+  details { border-top: 1px solid #2b2e35; }
+  details summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between;
+    min-height: 52px; font-weight: 750; font-size: 14px; gap: 8px; }
+  details summary::-webkit-details-marker { display: none; }
+  details summary .count { color: #9aa0a8; font-weight: 600; font-size: 12px; margin-left: auto; margin-right: 12px; white-space: nowrap; }
+  details summary::after { content: "+"; color: #9aa0a8; font-size: 20px; font-weight: 300; line-height: 1; }
+  details[open] summary::after { content: "−"; color: #ff5a1f; }
+  details .body { padding: 0 0 14px; font-size: 13px; color: #d3d0c9; }
+  details .body ul { margin: 0; padding-left: 17px; display: grid; gap: 7px; }
+  details .body ol { margin: 0; padding-left: 18px; display: grid; gap: 9px; }
+  details .body b { color: #f4f1ea; }
+  details .body .k { color: #ff9a6b; font-weight: 700; }
+  .record { margin-top: 14px; padding: 13px; border-radius: 14px; background: #1b1d22; border: 1px solid rgba(244,241,234,.08); }
+  .record .row { display: flex; justify-content: space-between; font-size: 13px; }
+  .record .hint { color: #9aa0a8; font-size: 11px; }
+  .record .grid { display: grid; grid-template-columns: 1.15fr 1fr .8fr; gap: 7px; margin-top: 9px; }
+  .record .cell { background: #14161a; border: 1px solid #2b2e35; border-radius: 9px; padding: 7px 9px; }
+  .record .cell span { display: block; color: #9aa0a8; font-size: 10px; }
+  .record .cell strong { font-size: 19px; }
+  .cta { margin-top: 10px; background: #ff5a1f; color: #17120f; border-radius: 12px; text-align: center; padding: 13px; font-weight: 800; }
+  .phone-caption { font-size: 11px; color: #5d636b; margin: 8px 0 0 4px; line-height: 1.5; }
+</style>
+</head>
+<body>
+<h1>动作样板审图 v3</h1>
+<p class="lead">
+  关节骨架 + 固定骨长 + 两骨 IK。手锁在器械握把、脚锁在踏板或地面，肘与膝由 IK 反解；器械由同一份 pose 反推，
+  所以踏板、钢索、髋垫不会和身体脱节。每排标了 p 值：起始 0 → 中程 0.5 → 峰值 1。
+</p>
+<div id="figs"></div>
+
+<h2 style="margin:26px 0 6px">390px 折叠层级模拟（可点）</h2>
+<p class="lead" style="margin-bottom:16px">
+  左：详情页 4 个同级折叠，默认全关，右上角“全部展开”。右：跟练页 1 个总折叠“动作教学 · 4 项”，
+  展开后 4 段内联；折叠上方常驻一句要点和 2 条关键提示。两个都是真的 details，可以直接点。
+</p>
+<div class="phone-row">
+  <div class="phone-wrap">
+    <div class="phone" id="detailPhone"></div>
+    <p class="phone-caption">详情页 · 默认全关 · 顶部“全部展开”（点一下变“全部收起”）</p>
+  </div>
+  <div class="phone-wrap">
+    <div class="phone" id="trainPhone"></div>
+    <p class="phone-caption">跟练页 · 1 个总折叠 · 本组记录紧接在折叠下方</p>
+  </div>
+</div>
+
+<script src="../guides.js"></script>
+<script src="../figures.js"></script>
+<script>
+var order = ['pulldown', 'legPress', 'gluteMachine', 'row', 'straightArm', 'dbBench', 'lateral',
+  'cableLateral', 'reverseFly', 'shoulderPress', 'legCurl', 'dbCalf', 'pushdown', 'biceps',
+  'gluteBodyweight', 'crunch'];
+
+function canvas(id, p, fault) {
+  return '<canvas width="480" height="300" data-id="' + id + '" data-p="' + p + '" data-fault="' + (fault || 0) + '"></canvas>';
+}
+
+document.getElementById('figs').innerHTML = order.map(function (id) {
+  var fig = FIGURES[id], g = GUIDES[id];
+  return '<section class="fig" data-id="' + id + '">' +
+    '<div class="head"><div><h2>' + g.name + '<span class="id">' + id + '</span></h2></div>' +
+    '<span class="note">' + fig.faults.map(function (f, i) { return '错误 ' + (i + 1) + ' ' + f; }).join(' · ') + '</span></div>' +
+    '<p class="subhead">正确动作 · 三帧</p>' +
+    '<div class="pose-grid">' +
+      '<figure>' + canvas(id, 0, 0) + '<figcaption>p=0 · 起始（手、脚已锁在器械上）</figcaption></figure>' +
+      '<figure>' + canvas(id, 0.5, 0) + '<figcaption>p=0.5 · 中程</figcaption></figure>' +
+      '<figure>' + canvas(id, 1, 0) + '<figcaption>p=1 · 峰值</figcaption></figure>' +
+    '</div>' +
+    '<p class="subhead">错误变体 · 峰值（橙色为正确残影）</p>' +
+    '<div class="faults">' + fig.faults.map(function (name, i) {
+      return '<figure>' + canvas(id, 1, i + 1) + '<figcaption>错误 ' + (i + 1) + ' · ' + name + '</figcaption></figure>';
+    }).join('') + '</div>' +
+    '<div class="legend"><span><i style="background:#16171A"></i>近侧肢体</span>' +
+    '<span><i style="background:#98A0A8"></i>远侧肢体（6–10px 深度偏移）</span>' +
+    '<span><i style="background:#FF5A1F"></i>正确姿势残影</span>' +
+    '<span><i style="background:#D92D20"></i>错误标注</span></div>' +
+  '</section>';
+}).join('');
+
+function paint() {
+  Array.prototype.forEach.call(document.querySelectorAll('canvas[data-id]'), function (cv) {
+    Figures.drawFrame(cv.getContext('2d'), cv.width, cv.height,
+      cv.getAttribute('data-id'), +cv.getAttribute('data-p'), +cv.getAttribute('data-fault'));
+  });
+}
+paint();
+
+/* ---------- 详情页：5 个同级折叠 ---------- */
+function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+
+var g = GUIDES.pulldown;
+document.getElementById('detailPhone').innerHTML =
+  '<p class="eyebrow">周一 · 上肢A</p><h3>高位下拉</h3>' +
+  '<p class="sub">3 组 × 8–12 次 · 组间休息 150 秒</p>' +
+  '<canvas width="720" height="450" data-id="pulldown" data-p="0.6" data-fault="0" ' +
+    'style="width:100%;height:auto;margin-top:10px;border-radius:12px;border:0"></canvas>' +
+  '<div class="seg"><span class="on">正确动作</span><span>错误示范</span></div>' +
+  '<p class="tagline">' + esc(g.tagline) + '</p>' +
+  '<div class="open-all"><button id="toggleAll">全部展开</button></div>' +
+  '<div id="detailFolds">' +
+    '<details><summary>器械设置<span class="count">' + (g.setup.length + g.machineVariation.length) + ' 项</span></summary><div class="body">' +
+      '<ul>' + g.setup.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' +
+      '<p style="margin:14px 0 6px;color:#ff9a6b;font-weight:700;font-size:12px">器械差异</p>' +
+      '<ul>' + g.machineVariation.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' +
+      '</div></details>' +
+    '<details><summary>分步动作<span class="count">' + g.steps.length + ' 步</span></summary><div class="body"><ol>' +
+      g.steps.map(function (s) { return '<li><b>' + esc(s.title) + '</b>：' + esc(s.text) + '</li>'; }).join('') + '</ol></div></details>' +
+    '<details><summary>常见错误<span class="count">' + g.mistakes.length + ' 个</span></summary><div class="body"><ul>' +
+      g.mistakes.map(function (m) {
+        return '<li><b>错误 ' + m.fault + ' · ' + esc(m.tag) + '</b><br>' +
+          '<span class="k">现象</span>：' + esc(m.phenomenon) + '<br>' +
+          '<span class="k">为什么错</span>：' + esc(m.why) + '<br>' +
+          '<span class="k">怎么改</span>：' + esc(m.fix) + '<br>' +
+          '<span class="k">自检</span>：' + esc(m.check) + '</li>';
+      }).join('') + '</ul></div></details>' +
+    '<details><summary>自检与安全<span class="count">' + g.safety.length + ' 条</span></summary><div class="body"><ul>' +
+      g.safety.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul></div></details>' +
+  '</div>';
+
+var toggle = document.getElementById('toggleAll');
+toggle.addEventListener('click', function () {
+  var open = toggle.textContent === '全部展开';
+  Array.prototype.forEach.call(document.querySelectorAll('#detailFolds details'), function (d) { d.open = open; });
+  toggle.textContent = open ? '全部收起' : '全部展开';
+});
+
+/* ---------- 跟练页：1 个总折叠 ---------- */
+document.getElementById('trainPhone').innerHTML =
+  '<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#9aa0a8">' +
+    '<div><strong style="display:block;color:#f4f1ea;font-size:13px">动作 1/5</strong>第 1/3 组</div>' +
+    '<div style="font-size:18px;font-weight:800;color:#f4f1ea">00:42</div>' +
+    '<div style="border:1px solid #2b2e35;border-radius:10px;padding:7px 11px">结束</div>' +
+  '</div>' +
+  '<canvas width="720" height="450" data-id="pulldown" data-p="0.62" data-fault="0" ' +
+    'style="width:100%;height:auto;margin-top:10px;border-radius:12px;border:0"></canvas>' +
+  '<div class="seg"><span class="on">正确动作</span><span>错误示范</span></div>' +
+  '<p class="eyebrow" style="margin-top:4px">周一 · 上肢A</p><h3>高位下拉</h3>' +
+  '<p class="sub">3 组 × 8–12 次 · 组间 150 秒</p>' +
+  '<p class="tagline">先沉肩，再用肘向下；杆到锁骨，回放数 2 秒。</p>' +
+  '<p class="tagline grey">腿垫压住大腿，躯干后倾不超过 15°。</p>' +
+  '<details style="margin-top:10px"><summary>动作教学<span class="count">4 项</span></summary><div class="body"><ul>' +
+    '<li><b>器械设置</b>：座椅高度让腿垫压住大腿；握距比肩略宽，手腕保持中立。</li>' +
+    '<li><b>分步</b>：沉肩 → 肘向下拉到锁骨 → 停 0.3 秒 → 2 秒回放。</li>' +
+    '<li><b>常见错误</b>：后仰借力；耸肩、肘后跑；半程、回放失控。</li>' +
+    '<li><b>自检</b>：肩前侧刺痛或手指麻木先停；颈后下拉不要做。</li>' +
+  '</ul></div></details>' +
+  '<div class="record"><div class="row"><b>本组记录</b><span class="hint">填完再点完成</span></div>' +
+    '<div class="grid"><div class="cell"><span>重量 kg</span><strong>40</strong></div>' +
+    '<div class="cell"><span>次数</span><strong>12</strong></div>' +
+    '<div class="cell"><span>RIR</span><strong>2</strong></div></div>' +
+    '<div class="cta">完成本组</div></div>';
+
+paint();
+
+/* ---------- 自检 ---------- */
+var report = {
+  overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+  detailFolds: document.querySelectorAll('#detailFolds details').length,
+  detailOpen: document.querySelectorAll('#detailFolds details[open]').length,
+  trainFolds: document.querySelectorAll('#trainPhone details').length,
+  bones: {}
+};
+order.forEach(function (id) {
+  var ref = Figures.measure(id, 0, 0), worst = 0, key = '';
+  [0.25, 0.5, 0.75, 1].forEach(function (p) {
+    var m = Figures.measure(id, p, 0);
+    Object.keys(ref).forEach(function (k) {
+      var d = Math.abs(m[k] - ref[k]);
+      if (d > worst) { worst = d; key = k + '@p=' + p; }
+    });
+  });
+  report.bones[id] = { worst: +worst.toFixed(3), key: key };
+});
+window.__report = report;
+console.log('REPORT ' + JSON.stringify(report));
+</script>
+</body>
+</html>
+
+

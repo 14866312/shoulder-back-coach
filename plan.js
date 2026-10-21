@@ -12,34 +12,45 @@
   var EXERCISES = {
     pulldown: { id: 'pulldown', name: '高位下拉', sets: 3, repsMin: 8, repsMax: 12, restSec: 150, bodyweight: false, perSide: false, muscle: '背' },
     row: { id: 'row', name: '胸支撑器械划船', sets: 2, repsMin: 10, repsMax: 12, restSec: 150, bodyweight: false, perSide: false, muscle: '背' },
-    incline: { id: 'incline', name: '上斜器械推胸', sets: 3, repsMin: 8, repsMax: 12, restSec: 150, bodyweight: false, perSide: false, muscle: '胸' },
+    straightArm: { id: 'straightArm', name: '直臂下压', sets: 2, repsMin: 12, repsMax: 15, restSec: 90, bodyweight: false, perSide: false, muscle: '背' },
+    dbBench: { id: 'dbBench', name: '哑铃平板卧推', sets: 3, repsMin: 8, repsMax: 12, restSec: 150, bodyweight: false, perSide: false, muscle: '胸' },
     lateral: { id: 'lateral', name: '哑铃侧平举', sets: 3, repsMin: 12, repsMax: 20, restSec: 90, bodyweight: false, perSide: false, muscle: '侧平举' },
+    cableLateral: { id: 'cableLateral', name: '绳索侧平举', sets: 2, repsMin: 12, repsMax: 15, restSec: 90, bodyweight: false, perSide: false, muscle: '侧平举' },
     reverseFly: { id: 'reverseFly', name: '反向蝴蝶机', sets: 2, repsMin: 12, repsMax: 20, restSec: 90, bodyweight: false, perSide: false, muscle: '后束' },
     shoulderPress: { id: 'shoulderPress', name: '坐姿器械肩推', sets: 2, repsMin: 8, repsMax: 12, restSec: 150, bodyweight: false, perSide: false, muscle: '肩推' },
     legPress: { id: 'legPress', name: '腿举', sets: 3, repsMin: 10, repsMax: 15, restSec: 150, bodyweight: false, perSide: false, muscle: '腿举' },
     legCurl: { id: 'legCurl', name: '坐姿腿弯举', sets: 3, repsMin: 10, repsMax: 15, restSec: 90, bodyweight: false, perSide: false, muscle: '腿弯举' },
-    calf: { id: 'calf', name: '器械提踵', sets: 2, repsMin: 12, repsMax: 20, restSec: 90, bodyweight: false, perSide: false, muscle: '提踵' },
+    dbCalf: { id: 'dbCalf', name: '哑铃站姿提踵', sets: 2, repsMin: 12, repsMax: 20, restSec: 90, bodyweight: false, perSide: false, muscle: '提踵' },
     pushdown: { id: 'pushdown', name: '绳索下压', sets: 2, repsMin: 10, repsMax: 15, restSec: 90, bodyweight: false, perSide: false, muscle: '三头' },
     biceps: { id: 'biceps', name: '哑铃弯举', sets: 2, repsMin: 10, repsMax: 15, restSec: 90, bodyweight: false, perSide: true, muscle: '二头' },
-    deadbug: { id: 'deadbug', name: '死虫式', sets: 2, repsMin: 6, repsMax: 10, restSec: 60, bodyweight: true, perSide: true, muscle: '核心' },
     gluteMachine: { id: 'gluteMachine', name: '臀桥机', sets: 2, repsMin: 10, repsMax: 15, restSec: 150, bodyweight: false, perSide: false, muscle: '臀桥' },
     gluteBodyweight: { id: 'gluteBodyweight', name: '自重臀桥', sets: 2, repsMin: 12, repsMax: 20, restSec: 150, bodyweight: true, perSide: false, muscle: '臀桥' },
     crunch: { id: 'crunch', name: '卷腹', sets: 2, repsMin: 10, repsMax: 15, restSec: 60, bodyweight: true, perSide: false, muscle: '核心' }
   };
 
   var DAYS = {
-    mon: { key: 'mon', label: '周一', title: '上肢A', focus: '背部优先', theme: '上肢A · 背部优先', exercises: ['pulldown', 'row', 'incline', 'lateral', 'reverseFly'] },
-    tue: { key: 'tue', label: '周二', title: '下肢A＋手臂＋核心', focus: '下肢为主', theme: '下肢A · 手臂＋核心', exercises: ['legPress', 'legCurl', 'calf', 'pushdown', 'biceps', 'deadbug'] },
-    thu: { key: 'thu', label: '周四', title: '上肢B', focus: '肩背优先', theme: '上肢B · 肩背优先', exercises: ['row', 'pulldown', 'shoulderPress', 'incline', 'lateral', 'reverseFly'] },
+    mon: { key: 'mon', label: '周一', title: '上肢A', focus: '背宽优先', theme: '上肢A · 背宽优先', exercises: ['pulldown', 'row', 'straightArm', 'lateral', 'reverseFly', 'dbBench'] },
+    tue: { key: 'tue', label: '周二', title: '下肢A＋手臂', focus: '下肢为主', theme: '下肢A · 手臂', exercises: ['legPress', 'legCurl', 'dbCalf', 'pushdown', 'biceps'] },
+    thu: { key: 'thu', label: '周四', title: '上肢B', focus: '肩宽优先', theme: '上肢B · 肩宽优先', exercises: ['row', 'pulldown', 'lateral', 'cableLateral', 'reverseFly', 'dbBench'] },
     fri: { key: 'fri', label: '周五', title: '下肢B＋手臂＋核心', focus: '下肢与核心', theme: '下肢B · 手臂＋核心', exercises: ['legPress', 'legCurl', 'gluteMachine', 'pushdown', 'biceps', 'crunch'] }
   };
 
   var DAY_SETS = {
-    mon: { pulldown: 3, row: 2, incline: 3, lateral: 3, reverseFly: 2 },
-    tue: { legPress: 3, legCurl: 3, calf: 2, pushdown: 2, biceps: 2, deadbug: 2 },
-    thu: { row: 3, pulldown: 2, shoulderPress: 2, incline: 3, lateral: 3, reverseFly: 2 },
+    mon: { pulldown: 3, row: 2, straightArm: 2, lateral: 3, reverseFly: 2, dbBench: 2 },
+    tue: { legPress: 3, legCurl: 2, dbCalf: 2, pushdown: 2, biceps: 2 },
+    thu: { row: 3, pulldown: 2, lateral: 3, cableLateral: 2, reverseFly: 2, dbBench: 2 },
     fri: { legPress: 2, legCurl: 2, gluteMachine: 2, gluteBodyweight: 2, pushdown: 2, biceps: 2, crunch: 2 }
   };
+
+  // 旧版本记录里可能出现已经被替换/删除的动作 id，保留名称以便历史记录仍能读懂。
+  var LEGACY_EXERCISES = {
+    incline: { id: 'incline', name: '上斜器械推胸', bodyweight: false, perSide: false, muscle: '胸' },
+    calf: { id: 'calf', name: '器械提踵', bodyweight: false, perSide: false, muscle: '提踵' },
+    deadbug: { id: 'deadbug', name: '死虫式', bodyweight: true, perSide: true, muscle: '核心' }
+  };
+  // 旧版本里被替换掉的器械动作 → 现在的平替；进行中的训练按这个迁移，
+  // 历史记录则原样保留（用 LEGACY_EXERCISES 的名字显示）。
+  var LEGACY_REPLACEMENT = { incline: 'dbBench', calf: 'dbCalf', deadbug: null };
 
   function fullSetsFor(dayKey, exId) {
     var map = DAY_SETS[dayKey];
@@ -48,7 +59,7 @@
 
   function clone(v) { return JSON.parse(JSON.stringify(v)); }
 
-  function resolveExercise(id) { return EXERCISES[id] || null; }
+  function resolveExercise(id) { return EXERCISES[id] || LEGACY_EXERCISES[id] || null; }
 
   function setsFor(exOrId, phase, fullSets) {
     var ex = typeof exOrId === 'string' ? EXERCISES[exOrId] : exOrId;
@@ -363,7 +374,8 @@
 
   return {
     APP_ID: APP_ID, VERSION: VERSION, STORAGE_KEY: STORAGE_KEY,
-    DAY_KEYS: DAY_KEYS, DAYS: DAYS, EXERCISES: EXERCISES, SUGGESTIONS: SUGGESTIONS,
+    DAY_KEYS: DAY_KEYS, DAYS: DAYS, EXERCISES: EXERCISES, LEGACY_EXERCISES: LEGACY_EXERCISES,
+    LEGACY_REPLACEMENT: LEGACY_REPLACEMENT, SUGGESTIONS: SUGGESTIONS,
     clone: clone, parseDate: parseDate, formatDate: formatDate, todayISO: todayISO,
     addDays: addDays, diffDays: diffDays, dayKeyForDate: dayKeyForDate, isMonday: isMonday,
     weekForDate: weekForDate, nextTraining: nextTraining, weekRange: weekRange,

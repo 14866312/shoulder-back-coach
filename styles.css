@@ -192,9 +192,32 @@ select { appearance: none; background-image: linear-gradient(45deg, transparent 
 .tips { display: grid; gap: 7px; margin-top: 14px; }
 .tip { display: flex; gap: 9px; font-size: 13px; color: #d8d5ce; }
 .tip::before { content: ""; width: 5px; height: 5px; margin-top: 7px; border-radius: 50%; background: var(--orange); flex: 0 0 auto; }
-.mistakes { margin-top: 12px; border-left: 3px solid var(--red); background: var(--red-soft); border-radius: 0 11px 11px 0; padding: 9px 12px; }
-.mistakes summary { cursor: pointer; min-height: 30px; display: flex; align-items: center; color: #ff9a93; font-size: 12px; font-weight: 750; }
-.mistakes ul { margin-top: 5px; color: #e5b8b4; font-size: 12px; line-height: 1.55; }
+/* ---------- 折叠教学 ---------- */
+.cue { margin-top: 12px; padding: 10px 12px; border-left: 3px solid var(--orange); border-radius: 0 10px 10px 0; background: var(--orange-soft); color: #e8e5de; font-size: 13px; line-height: 1.55; }
+.fold, .fold-group details { margin-top: 10px; border-top: 1px solid var(--line); }
+.fold summary, .fold-group summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 8px; min-height: 52px; font-size: 14px; font-weight: 750; }
+.fold summary::-webkit-details-marker, .fold-group summary::-webkit-details-marker { display: none; }
+.fold-count { margin-left: auto; margin-right: 10px; color: var(--muted); font-size: 12px; font-weight: 600; white-space: nowrap; }
+.fold summary::after, .fold-group summary::after { content: "+"; color: var(--muted); font-size: 20px; font-weight: 300; line-height: 1; width: 18px; text-align: center; }
+.fold[open] summary::after, .fold-group details[open] summary::after { content: "−"; color: var(--orange); }
+.fold-body { padding: 0 0 14px; font-size: 13px; line-height: 1.62; color: #d3d0c9; }
+.fold-body ul { display: grid; gap: 7px; padding-left: 17px; }
+.fold-body ol { display: grid; gap: 9px; padding-left: 18px; }
+.fold-body b { color: var(--ink); }
+.fold-body.inline { padding: 2px 0 16px; display: grid; gap: 8px; }
+.fold-body.inline p { margin: 0; font-size: 12.5px; line-height: 1.6; color: #c9c6bf; }
+.fold-body.inline p b { color: var(--ink); }
+.fold-sub { margin: 14px 0 6px; color: #ff9a6b; font-size: 12px; font-weight: 700; }
+.mistake-list { gap: 14px; }
+.mistake-list li { display: grid; gap: 5px; }
+.mistake-list span { color: #bdbab3; font-size: 12.5px; line-height: 1.6; }
+.mistake-list i { display: inline-block; min-width: 58px; margin-right: 6px; color: #ff9a6b; font-style: normal; font-weight: 700; }
+.fold-group { margin-top: 4px; }
+.open-all { display: flex; justify-content: flex-end; margin-top: 8px; }
+.link-btn { border: 0; background: none; padding: 8px 4px; color: var(--orange); font-size: 12px; font-weight: 750; cursor: pointer; }
+.fault-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.fault-chips button { border: 1px solid var(--line); border-radius: 999px; background: #191b20; color: var(--muted); font-size: 11.5px; padding: 7px 11px; cursor: pointer; }
+.fault-chips button.is-active { border-color: var(--red); background: var(--red-soft); color: #ff9a93; font-weight: 700; }
 .setup-field { margin-top: 15px; }
 .set-panel { margin-top: 15px; padding: 14px; border-radius: 16px; background: var(--card); border: 1px solid rgba(244,241,234,.075); }
 .set-panel-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 12px; }

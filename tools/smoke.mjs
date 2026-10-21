@@ -31,6 +31,17 @@ try {
   await waitServer();
   browser = await chromium.launch({ executablePath: edge, headless: true, args: ['--no-sandbox', '--disable-gpu', '--hide-scrollbars'] });
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, locale: 'zh-CN', timezoneId: 'Asia/Shanghai', acceptDownloads: true });
+  // 计划只在周一/周二/周四/周五训练。把“今天”固定在周一，测试才不会因为实际运行在
+  // 周三或周末而找不到「开始训练」。只伪造 Date，不动 setTimeout/setInterval。
+  await context.addInitScript(() => {
+    const RealDate = Date;
+    const fixed = new RealDate('2026-10-19T10:00:00+08:00').getTime();
+    class FixedDate extends RealDate {
+      constructor(...args) { if (args.length === 0) super(fixed); else super(...args); }
+      static now() { return fixed; }
+    }
+    window.Date = FixedDate;
+  });
   const page = await context.newPage();
   const errors = [];
   page.on('console', m => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
@@ -147,7 +158,11 @@ try {
 
   await page.waitForSelector('#summaryLayer:not(.is-hidden)');
   const summarySets = await page.locator('#summaryBody .stat strong').first().textContent();
-  assert(summarySets === '13', 'summary set count is ' + summarySets);
+  const expectedSets = await page.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('shoulderBackCoach.v1'));
+    return s.active.exercises.reduce((n, ex) => n + ex.sets.length, 0);
+  });
+  assert(summarySets === String(expectedSets), 'summary set count is ' + summarySets + ', expected ' + expectedSets);
   await shot('summary');
   await page.click('#saveSummaryBtn');
   await page.waitForSelector('#view h1');
@@ -159,17 +174,23 @@ try {
   assert(stored.sessions.length === 1, 'session was not saved');
   assert(stored.active === null, 'active session not cleared');
   const totalSets = stored.sessions[0].exercises.reduce((n, ex) => n + ex.sets.length, 0);
-  assert(totalSets === 13, 'stored set count is ' + totalSets);
+  assert(totalSets === expectedSets, 'stored set count is ' + totalSets + ', expected ' + expectedSets);
   await page.reload({ waitUntil: 'networkidle' });
   assert((await page.locator('h1').first().textContent()) === '记录', 'log disappeared after reload');
-  await page.selectOption('#logFilter', 'mon:pulldown');
+  const trainedDay = stored.sessions[0].dayKey;
+  const trainedEx = stored.sessions[0].exercises[0].exId;
+  await page.selectOption('#logFilter', trainedDay + ':' + trainedEx);
   await page.waitForTimeout(250);
   const filtered = await page.locator('body').innerText();
-  assert(filtered.includes('上次摘要') && filtered.includes('40 kg'), 'exercise filter summary missing');
+  assert(filtered.includes('上次摘要') && !filtered.includes('这个动作还没有记录'), 'exercise filter summary missing: ' + filtered.slice(0, 600).replace(/\s+/g, ' '));
   await shot('log-filter');
   await page.click('.history-item');
   await page.waitForSelector('#modalLayer:not(.is-hidden)');
-  assert((await page.locator('#modalContent').innerText()).includes('高位下拉'), 'session detail missing exercise');
+  const trainedName = await page.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('shoulderBackCoach.v1'));
+    return window.Plan.EXERCISES[s.sessions[0].exercises[0].exId].name;
+  });
+  assert((await page.locator('#modalContent').innerText()).includes(trainedName), 'session detail missing exercise');
   await shot('log-detail');
   await page.click('#modalContent [data-action="close-modal"]');
   await page.selectOption('#logFilter', '');
